@@ -2,11 +2,11 @@
 - name: Create user with SSH key access
   hosts: all
   become: yes
-  vars_files:
-   - accessvm.yaml
+  # vars_files:
+  #  - accessvm.yaml
   vars:
-    username:  # username с которым будете подключаться
-    user_password: "{{ '' | password_hash('sha512') }}" # пароль
+    username: chernyavsky # username с которым будете подключаться
+    user_password: "{{ 'qcdKqaM8' | password_hash('sha512') }}" # пароль
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}" 
 
   tasks:

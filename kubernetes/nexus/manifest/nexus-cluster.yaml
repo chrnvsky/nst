@@ -1,0 +1,31 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+
+metadata:
+  name: pgsql
+  namespace: databases
+
+spec:
+  teamId: "pgsql"
+  env:
+    - name: ALLOW_NOSSL
+      value: "true"
+  numberOfInstances: 1
+  users:
+    nexus:  # database owner
+     - superuser
+     - createdb  
+  volume:
+    size: 25Gi
+    storageClass: local-retain
+  preparedDatabases:
+    nexus:
+      extensions:
+        pg_trgm: nexus
+      schemas:
+        nexus: {}
+
+  postgresql:
+    version: "16"
+    parameters:
+      max_connections: "200"

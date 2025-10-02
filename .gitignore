@@ -1,0 +1,10 @@
+scripts/syncregistry/*
+scripts/nexus_migration/nexus_migration_queue.sh
+kubernetes/staff
+kubernetes/nexus/helm-charts/nxrm3-ha-repository
+kubernetes/nexus/helm-charts/nginx-ingress
+kubernetes/nexus/other/nexus-cert.crt
+kubernetes/nexus/other/nexus-private.key
+kubernetes/nexus/manifest/nexus-admin-secret.yaml
+kubernetes/gitlab-runner
+ansible/inventory/hosts.ini

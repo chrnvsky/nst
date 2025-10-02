@@ -1,0 +1,10 @@
+controller:
+
+  config:
+    http-snippet: |
+       proxy_cache_path /tmp/nexus_cache levels=1:2 keys_zone=nexus_cache:10m use_temp_path=off max_size=1g inactive=4h;
+    allow-snippet-annotations: "true"
+    annotations-risk-level: "Critical"
+
+  nodeSelector:
+    kubernetes.io/hostname: master2

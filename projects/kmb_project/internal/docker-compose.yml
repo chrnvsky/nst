@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: ncuser
+      POSTGRES_PASSWORD: ncpassword
+    volumes:
+      - /var/nextcloud/data/db:/var/lib/postgresql/data
+    networks:
+      - nextcloud_internal
+
+  app:
+    container_name: nextcloud_app
+    image: nextcloud:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: ncuser
+      POSTGRES_PASSWORD: ncpassword
+      POSTGRES_HOST: db
+    volumes:
+      - /var/nextcloud/data/nextcloud:/var/www/html
+    networks:
+      - nextcloud_internal
+      - nginx_network
+
+
+networks:
+  nextcloud_internal:
+    internal: true
+  nginx_network:
+    external: true
+  

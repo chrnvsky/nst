@@ -1,0 +1,119 @@
+image:
+  tag: 3.82.0
+
+
+nodeSelector:
+  kubernetes.io/hostname: worker1
+
+
+fullnameOverride: "nexus"
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce    
+  storageSize: 200Gi   
+  storageClass: "local-retain"
+  persistentVolumeReclaimPolicy: Retain
+  annotations:
+    volume.kubernetes.io/selected-node: worker1
+ 
+
+nexus: 
+  env:
+    - name: INSTALL4J_ADD_VM_PARAMS
+      value: |-
+        -Xms2703m -Xmx2703m
+    - name: NEXUS_DATASTORE_NEXUS_JDBCURL
+      value: "jdbc:postgresql://pgsql.databases.svc.cluster.local:5432/nexus"
+    # - name: NEXUS_SECURITY_RANDOMPASSWORD
+    #   value: "true"
+    - name: NEXUS_DATASTORE_NEXUS_USERNAME
+      valueFrom:
+        secretKeyRef:
+          key: username
+          name: nexus.pgsql.credentials.postgresql.acid.zalan.do          
+    - name: NEXUS_DATASTORE_NEXUS_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: password
+          name: nexus.pgsql.credentials.postgresql.acid.zalan.do
+    - name: NEXUS_SECURITY_INITIAL_PASSWORD
+      valueFrom:
+        secretKeyRef:
+           name: nexus-admin-secret
+           key: admin.password
+
+  properties:
+    override: false
+    data:
+      nexus.scripts.allowCreation: true
+      # See this article for ldap configuratioon options https://support.sonatype.com/hc/en-us/articles/216597138-Setting-Advanced-LDAP-Connection-Properties-in-Nexus-Repository-Manager
+      # nexus.ldap.env.java.naming.security.authentication: simple
+  # nodeSelector:
+  #   cloud.google.com/gke-nodepool: default-pool
+  resources:
+  # minimum recommended memory settings for a small, person instance from
+  # https://help.sonatype.com/repomanager3/product-information/system-requirements
+    requests:
+      cpu: 2
+      memory: 6Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+
+  # The ports should only be changed if the nexus image uses a different port
+  nexusPort: 8081
+
+  # Default the pods UID and GID to match the nexus3 container.
+  # Customize or remove these values from the securityContext as appropriate for
+  # your deployment environment.
+  securityContext:
+    runAsUser: 200
+    runAsGroup: 200
+    fsGroup: 200
+  podAnnotations: {}
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 6
+    timeoutSeconds: 10
+    path: /
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 6
+    timeoutSeconds: 10
+    path: /
+  # hostAliases allows the modification of the hosts file inside a container
+  hostAliases: []
+  # - ip: "192.168.1.10"
+  #   hostnames:
+  #   - "example.com"
+  #   - "www.example.com"
+
+
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+  # Для кэширования запросов
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_cache nexus_cache;
+      proxy_cache_valid 200 302 30m;
+      proxy_cache_valid 404 1m;
+      add_header X-Cache-Status $upstream_cache_status;
+      proxy_cache_key $scheme$host$request_uri;
+      proxy_cache_methods GET HEAD;
+      proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+      proxy_cache_bypass $http_upgrade;
+  hostRepo: nexus-kk.tomskasu.ru  
+  hostPath: /
+  tls:
+    - secretName: nexus-tls-secret
+      hosts:
+        - nexus-kk.tomskasu.ru
