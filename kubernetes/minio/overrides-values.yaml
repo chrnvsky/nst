@@ -1,0 +1,25 @@
+rootUser: "admin"
+rootPassword: "adminadmin"
+
+image:
+  repository: quay.io/minio/minio
+  tag: RELEASE.2025-09-07T16-13-09Z
+  pullPolicy: IfNotPresent
+
+
+# Number of MinIO containers running
+replicas: 4
+
+## minio mode, i.e. standalone or distributed
+mode: distributed
+
+## Storage class of PV to bind. By default it looks for standard storage class.
+## If the PV uses a different storage class, specify that here.
+persistence:
+  storageClass: "local-path"
+  size: 2Gi
+
+resources:
+  requests:
+    memory: 250Mi
+
