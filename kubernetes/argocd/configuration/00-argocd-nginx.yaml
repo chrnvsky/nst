@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: docker.io/library/nginx@sha256:35fabd32a7582bed5da0a40f41fd4984df7ddff32f81cd6be4614d07240ec115
           ports:
             - containerPort: 80
